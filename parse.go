@@ -1,108 +1,111 @@
 package sshconfig
 
 import (
-	"bufio"
-	"os"
-	"strconv"
-	"strings"
+    "bufio"
+    "os"
+    "strconv"
+    "strings"
 )
 
+const DefaultSSHPort = 22
+const ConfigCommentChar = "#"
+
 type SSHConfig struct {
-	Host         string
-	HostName     string
-	Port         int
-	User         string
-	IdentityFile string
+    Host         string
+    HostName     string
+    Port         int
+    User         string
+    IdentityFile string
 }
 
 func Parse(fullfilename string) ([]*SSHConfig, error) {
-	return config(fullfilename)
+    return config(fullfilename)
 }
 
 func config(fullfilename string) ([]*SSHConfig, error) {
-	file, err := os.Open(fullfilename)
+    file, err := os.Open(fullfilename)
 
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        return nil, err
+    }
 
-	defer file.Close()
+    defer file.Close()
 
-	var result []*SSHConfig
+    var result []*SSHConfig
 
-	reader := bufio.NewReaderSize(file, 4096)
-	conf := new(SSHConfig)
+    reader := bufio.NewReaderSize(file, 4096)
+    conf := new(SSHConfig)
 
-	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		line = strings.TrimSpace(line)
+    for line := ""; err == nil; line, err = reader.ReadString('\n') {
+        line = strings.TrimSpace(line)
 
-		data := strings.Split(line, "#")[0]
-		data = strings.TrimSpace(data)
+        data := strings.Split(line, ConfigCommentChar)[0]
+        data = strings.TrimSpace(data)
 
-		if len(data) < 1 {
-			continue
-		}
+        if len(data) < 1 {
+            continue
+        }
 
-		dataset := strings.Split(data, " ")
-		dataset = extractHasData(dataset)
-		key := strings.TrimSpace(dataset[0])
-		key = strings.ToLower(key)
+        dataset := strings.Split(data, " ")
+        dataset = extractHasData(dataset)
+        key := strings.TrimSpace(dataset[0])
+        key = strings.ToLower(key)
 
-		switch key {
-		case "host":
-			if conf.Host != "" {
+        switch key {
+        case "host":
+            if conf.Host != "" {
 
-				if conf.Port == 0 {
-					conf.Port = 22
-				}
+                if conf.Port == 0 {
+                    conf.Port = DefaultSSHPort
+                }
 
-				result = append(result, conf)
-				conf = new(SSHConfig)
-			}
+                result = append(result, conf)
+                conf = new(SSHConfig)
+            }
 
-			conf.Host = dataset[1]
+            conf.Host = dataset[1]
 
-		case "hostname":
-			conf.HostName = dataset[1]
+        case "hostname":
+            conf.HostName = dataset[1]
 
-		case "port":
-			port, err := strconv.Atoi(dataset[1])
+        case "port":
+            port, err := strconv.Atoi(dataset[1])
 
-			if err != nil {
-				conf.Port = 22
-			} else {
-				conf.Port = port
-			}
+            if err != nil {
+                conf.Port = DefaultSSHPort
+            } else {
+                conf.Port = port
+            }
 
-		case "user":
-			conf.User = dataset[1]
-		case "identityfile":
-			conf.IdentityFile = dataset[1]
-		}
+        case "user":
+            conf.User = dataset[1]
+        case "identityfile":
+            conf.IdentityFile = dataset[1]
+        }
 
-	}
+    }
 
-	if conf.Host != "" {
-		result = append(result, conf)
-	}
+    if conf.Host != "" {
+        result = append(result, conf)
+    }
 
-	return result, nil
+    return result, nil
 }
 
 func extractHasData(dataset []string) []string {
-	var result []string
+    var result []string
 
-	for _, data := range dataset {
-		trimed := strings.TrimSpace(data)
+    for _, data := range dataset {
+        trimed := strings.TrimSpace(data)
 
-		if len(data) > 0 {
-			result = append(result, trimed)
-		}
-	}
+        if len(data) > 0 {
+            result = append(result, trimed)
+        }
+    }
 
-	if len(result) < 2 {
-		result = append(result, "")
-	}
+    if len(result) < 2 {
+        result = append(result, "")
+    }
 
-	return result
+    return result
 }
