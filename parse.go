@@ -12,6 +12,7 @@ type SSHConfig struct {
     HostName string
     Port     int
     User     string
+    IdentityFile string
 }
 
 func Parse(fullfilename string) ([]*SSHConfig, error) {
@@ -43,6 +44,7 @@ func config(fullfilename string) ([]*SSHConfig, error) {
         }
 
         dataset := strings.Split(data, " ")
+        dataset = extractHasData(dataset)
         key := strings.TrimSpace(dataset[0])
         key = strings.ToLower(key)
 
@@ -74,6 +76,8 @@ func config(fullfilename string) ([]*SSHConfig, error) {
 
         case "user":
             conf.User = dataset[1]
+        case "identityfile":
+            conf.IdentityFile = dataset[1]
         }
 
     }
@@ -83,4 +87,22 @@ func config(fullfilename string) ([]*SSHConfig, error) {
     }
 
     return result, nil
+}
+
+func extractHasData(dataset []string) []string {
+    var result []string
+
+    for _, data := range dataset {
+        trimed := strings.TrimSpace(data)
+
+        if len(data) > 0 {
+            result = append(result, trimed)
+        }
+    }
+
+    if len(result) < 2 {
+        result = append(result, "")
+    }
+
+    return result
 }
