@@ -1,0 +1,18 @@
+ServerAliveInterval 40
+
+Host st2
+    HostName st2.dev
+    User development
+
+host test1
+    hostname 192.168.0.112
+    user development
+    port 19122
+
+host
+    hostname 192.168.0.11
+
+Host test3
+    HostName test.serve
+    User user
+    IdentityFile ~/Downloads/test.pem

@@ -5,7 +5,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-    result, err := Parse("/Users/h-takeo/.ssh/config")
+    result, err := Parse("./.sshconfig_test")
 
     if err != nil {
         t.Errorf("%v", err)
